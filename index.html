@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>EMON TV — Premium Live TV &amp; IPTV Streaming</title>
-<meta name="description" content="EMON TV is a premium live television experience — hundreds of channels, instant search, favorites and continue watching, streamed straight to your browser.">
+<meta name="description" content="EMON TV is a premium live television experience — thousands of channels, instant search, favorites and continue watching, streamed straight to your browser.">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,13 +16,13 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="EMON TV — Premium Live TV & IPTV Streaming">
-<meta property="og:description" content="Hundreds of live channels. Instant search, favorites, continue watching. Free and open in your browser.">
+<meta property="og:description" content="Thousands of live channels. Instant search, favorites, continue watching. Free and open in your browser.">
 <meta property="og:site_name" content="EMON TV">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EMON TV — Premium Live TV & IPTV Streaming">
-<meta name="twitter:description" content="Hundreds of live channels. Instant search, favorites, continue watching. Free and open in your browser.">
+<meta name="twitter:description" content="Thousands of live channels. Instant search, favorites, continue watching. Free and open in your browser.">
 
 <!-- Favicon (inline SVG, no external asset needed) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230a0a0f'/%3E%3Cpath d='M38 30 L74 50 L38 70 Z' fill='%23d4af37'/%3E%3C/svg%3E">
@@ -651,6 +651,10 @@ input{font-family:inherit;color:inherit}
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Categories</span><b id="statCats" style="color:var(--text)">0</b></div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Favorites</span><b id="statFavs" style="color:var(--text)">0</b></div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim)"><span>Watching now (demo)</span><b id="statOnline" style="color:var(--ok)">—</b></div>
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+        <div style="font-size:12.5px;color:var(--text-dim);margin-bottom:8px">Playlist sources</div>
+        <div id="sourceRows" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--text-dim)"><span>Loading sources…</span></div>
+      </div>
     </div>
     <div style="padding:0 14px;display:flex;flex-direction:column;gap:10px">
       <button class="btn-ghost" id="clearHistoryBtn">Clear watch history</button>
@@ -710,7 +714,7 @@ input{font-family:inherit;color:inherit}
     <button class="close-x" id="disclaimerClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     <div class="sheet-handle"></div>
     <h3>Disclaimer</h3>
-    <p>EMON TV is a streaming <b>client</b> only. It does not host, store, or upload any media. All streams are pulled from a third-party, publicly available playlist and playback quality, availability, and legality of individual streams are the responsibility of their original broadcasters. Use at your own discretion and in accordance with your local laws.</p>
+    <p>EMON TV is a streaming <b>client</b> only. It does not host, store, or upload any media. All streams are pulled from third-party, publicly available playlists and playback quality, availability, and legality of individual streams are the responsibility of their original broadcasters. Use at your own discretion and in accordance with your local laws.</p>
     <div class="sheet-actions"><button class="btn-primary" id="disclaimerAgree">I understand</button></div>
   </div>
 </div>
@@ -724,7 +728,11 @@ input{font-family:inherit;color:inherit}
 
 /* ---------- 1. CONFIG & STATE ---------- */
 const CONFIG = {
-  PLAYLIST_URL: 'https://raw.githubusercontent.com/shidul100/Iptv/refs/heads/main/playlist.m3u',
+  // Playlist sources are merged into one channel list (first source wins on duplicates).
+  PLAYLIST_SOURCES: [
+    { label: 'Shidul IPTV', url: 'https://raw.githubusercontent.com/shidul100/Iptv/refs/heads/main/playlist.m3u' },
+    { label: 'IPTV-org Worldwide', url: 'https://iptv-org.github.io/iptv/index.m3u' },
+  ],
   PAGE_SIZE: 24,
   MAX_RETRY: 6,
   RETRY_BASE_MS: 1200,
@@ -734,6 +742,7 @@ const CONFIG = {
 
 const state = {
   allChannels: [],          // full parsed channel list
+  playlistSources: [],      // per-source load results { label, url, count, ok }
   categories: [],           // derived category list
   activeCategory: 'All',
   query: '',
@@ -916,11 +925,32 @@ function parseM3U(text) {
 async function loadPlaylist(isRefresh = false) {
   if (!isRefresh) showGridSkeletons();
   try {
-    const res = await fetch(CONFIG.PLAYLIST_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Playlist request failed: ' + res.status);
-    const text = await res.text();
-    const channels = parseM3U(text);
+    // Fetch every playlist source in parallel, then merge into one list.
+    // A single failing source must not take the whole app down.
+    const results = await Promise.allSettled(CONFIG.PLAYLIST_SOURCES.map(async (src) => {
+      const res = await fetch(src.url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Playlist request failed: ' + res.status);
+      return parseM3U(await res.text());
+    }));
+    const seenUrls = new Set();
+    const channels = [];
+    state.playlistSources = results.map((r, i) => {
+      const src = CONFIG.PLAYLIST_SOURCES[i];
+      if (r.status === 'fulfilled') {
+        r.value.forEach(ch => {
+          // First source keeps its order exactly (keeps old favorites valid);
+          // later sources only add streams not already present.
+          if (i === 0 || !seenUrls.has(ch.url)) channels.push(ch);
+          if (ch.url) seenUrls.add(ch.url);
+        });
+        return { label: src.label, url: src.url, count: r.value.length, ok: true };
+      }
+      return { label: src.label, url: src.url, count: 0, ok: false };
+    });
     if (!channels.length) throw new Error('Empty playlist');
+    // Reassign globally unique ids: favorites/recents key off ch.id, and each
+    // source's parser numbers from 0, so ids would otherwise collide.
+    channels.forEach((ch, idx) => { ch.id = (ch.tvgId || ch.name) + '::' + idx; });
     state.allChannels = channels;
     buildCategories();
     applyFilters();
@@ -1525,6 +1555,17 @@ function updateSettingsStats() {
   document.getElementById('statCats').textContent = state.categories.length;
   document.getElementById('statFavs').textContent = state.favorites.length;
   document.getElementById('statOnline').textContent = simulatedOnlineCount();
+  renderSourceRows();
+}
+function renderSourceRows() {
+  const box = document.getElementById('sourceRows');
+  if (!box) return;
+  const rows = (state.playlistSources && state.playlistSources.length)
+    ? state.playlistSources
+    : CONFIG.PLAYLIST_SOURCES.map(s => ({ label: s.label, url: s.url, count: 0, ok: false }));
+  box.innerHTML = rows.map(s =>
+    `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span style="display:flex;align-items:center;gap:7px"><i style="width:7px;height:7px;border-radius:50%;background:${s.ok ? 'var(--ok)' : 'var(--text-faint)'};flex:0 0 auto"></i>${escapeHTML(s.label)}</span><b style="color:var(--text)">${s.ok ? s.count.toLocaleString() + ' channels' : 'not loaded'}</b></div>`
+  ).join('');
 }
 function simulatedOnlineCount() {
   // Demo-only figure — no real analytics backend is wired into this client.
