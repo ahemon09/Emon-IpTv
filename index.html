@@ -62,6 +62,20 @@
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
+/* ---------- LIGHT MODE (auto day theme) ---------- */
+body.light{
+  --bg-0:#f4f1ea; --bg-1:#ffffff; --bg-2:#efece3;
+  --glass:rgba(25,25,60,.055); --glass-strong:rgba(25,25,60,.1);
+  --border:rgba(25,25,60,.13);
+  --gold:#9a7b14; --gold-hi:#b8931a; --gold-dim:#8a7328;
+  --live:#e11d48; --ok:#0d9468;
+  --text:#211d19; --text-dim:#5d5766; --text-faint:#9a94a6;
+  --shadow-soft:0 10px 30px rgba(80,65,20,.18);
+  --shadow-gold:0 0 0 1px rgba(154,123,20,.35),0 8px 24px rgba(154,123,20,.14);
+}
+body.light .chan-logo-wrap{background:#e9e4d6}
+body.light .splash-logo{background:linear-gradient(145deg,#ffffff,#efece3)}
+body.light ::-webkit-scrollbar-thumb{background:rgba(154,123,20,.35)}
 @font-face{
   font-family:'Bebas Neue';
   src:local('Bebas Neue');
@@ -605,6 +619,9 @@ body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
       <div class="tuner-center-line"></div>
     </div>
 
+    <!-- COUNTRIES -->
+    <nav class="cat-row" id="countryRow" aria-label="Countries"></nav>
+
     <!-- CATEGORIES -->
     <nav class="cat-row" id="catRow" aria-label="Channel categories"></nav>
 
@@ -632,7 +649,7 @@ body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
 
   <!-- ============ CATEGORIES VIEW ============ -->
   <section id="view-categories" class="view">
-    <div class="section-head"><h3 style="text-transform:uppercase;letter-spacing:1px;font-size:13px;color:var(--text-dim);font-weight:700">Browse Categories</h3></div>
+    <div class="section-head"><h3 style="text-transform:uppercase;letter-spacing:1px;font-size:13px;color:var(--text-dim);font-weight:700">Browse Countries</h3></div>
     <div class="grid" id="catGrid" style="grid-template-columns:repeat(2,1fr)"></div>
   </section>
 
@@ -653,7 +670,7 @@ body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
         <button class="switch" id="swDataSaver" role="switch" aria-checked="false"><i></i></button>
       </div>
       <div class="setting-row">
-        <div><div class="label">Theme</div><div class="sub" id="themeSub">Premium dark</div></div>
+        <div><div class="label">Auto day / night</div><div class="sub" id="themeSub">Light by day · Dark at night</div></div>
         <button class="switch on" id="swAutoTheme" role="switch" aria-checked="true"><i></i></button>
       </div>
       <div class="setting-row">
@@ -664,6 +681,7 @@ body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
     <div class="glass" style="margin:0 14px 16px;border-radius:16px;padding:14px">
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Channels loaded</span><b id="statChannels" style="color:var(--text)">0</b></div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Categories</span><b id="statCats" style="color:var(--text)">0</b></div>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Countries</span><b id="statCountries" style="color:var(--text)">0</b></div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Favorites</span><b id="statFavs" style="color:var(--text)">0</b></div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim)"><span>Watching now (demo)</span><b id="statOnline" style="color:var(--ok)">—</b></div>
       <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
@@ -691,9 +709,9 @@ body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.4-9.5-8.8C.7 8.6 2 5 5.4 4.2 7.6 3.7 9.8 4.7 12 7c2.2-2.3 4.4-3.3 6.6-2.8C22 5 23.3 8.6 21.5 12.2 19 16.6 12 21 12 21z"/></svg>
     <span>Favorites</span>
   </button>
-  <button class="nav-btn" data-view="categories" aria-label="Categories">
+  <button class="nav-btn" data-view="categories" aria-label="Countries">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-    <span>Categories</span>
+    <span>Countries</span>
   </button>
   <button class="nav-btn" data-view="settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09A1.7 1.7 0 009 19.4a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09A1.7 1.7 0 004.6 9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.4 9c.14.36.42.65.78.9"/></svg>
@@ -760,6 +778,8 @@ const state = {
   playlistSources: [],      // per-source load results { label, url, count, ok }
   categories: [],           // derived category list
   activeCategory: 'All',
+  countries: [],            // derived country list
+  activeCountry: 'All',
   query: '',
   filtered: [],              // channels after search+category filter
   renderedCount: 0,          // for infinite scroll into `.grid`
@@ -780,6 +800,7 @@ const state = {
   autoRetry: true,
   dataSaver: false,
   tvMode: false,             // TV / remote mode: D-pad spatial navigation
+  autoTheme: true,           // auto day/night: light 6am–6pm, dark otherwise
   deferredInstallPrompt: null,
   view: 'home',
   favorites: [],
@@ -902,6 +923,36 @@ function iconDataURI(size) {
 }
 
 /* ---------- 5. M3U PLAYLIST PARSER ---------- */
+// Country code -> display name (iptv-org tvg-ids carry the code: "Name.cc@...").
+const COUNTRY_NAMES = { af:'Afghanistan', al:'Albania', dz:'Algeria', ao:'Angola', ar:'Argentina', am:'Armenia', au:'Australia', at:'Austria', az:'Azerbaijan', bs:'Bahamas', bh:'Bahrain', bd:'Bangladesh', bb:'Barbados', by:'Belarus', be:'Belgium', bz:'Belize', bj:'Benin', bt:'Bhutan', bo:'Bolivia', ba:'Bosnia', bw:'Botswana', br:'Brazil', bn:'Brunei', bg:'Bulgaria', bf:'Burkina Faso', bi:'Burundi', kh:'Cambodia', cm:'Cameroon', ca:'Canada', cv:'Cape Verde', cf:'Central Africa', td:'Chad', cl:'Chile', cn:'China', co:'Colombia', km:'Comoros', cg:'Congo', cr:'Costa Rica', hr:'Croatia', cu:'Cuba', cy:'Cyprus', cz:'Czechia', dk:'Denmark', dj:'Djibouti', dm:'Dominica', do:'Dominican Republic', ec:'Ecuador', eg:'Egypt', sv:'El Salvador', gq:'Equatorial Guinea', er:'Eritrea', ee:'Estonia', sz:'Eswatini', et:'Ethiopia', fj:'Fiji', fi:'Finland', fr:'France', ga:'Gabon', gm:'Gambia', ge:'Georgia', de:'Germany', gh:'Ghana', gr:'Greece', gd:'Grenada', gt:'Guatemala', gn:'Guinea', gw:'Guinea-Bissau', gy:'Guyana', ht:'Haiti', hn:'Honduras', hk:'Hong Kong', hu:'Hungary', is:'Iceland', in:'India', id:'Indonesia', ir:'Iran', iq:'Iraq', ie:'Ireland', il:'Israel', it:'Italy', jm:'Jamaica', jp:'Japan', jo:'Jordan', kz:'Kazakhstan', ke:'Kenya', ki:'Kiribati', kw:'Kuwait', kg:'Kyrgyzstan', la:'Laos', lv:'Latvia', lb:'Lebanon', ls:'Lesotho', lr:'Liberia', ly:'Libya', li:'Liechtenstein', lt:'Lithuania', lu:'Luxembourg', mg:'Madagascar', mw:'Malawi', my:'Malaysia', mv:'Maldives', ml:'Mali', mt:'Malta', mr:'Mauritania', mu:'Mauritius', mx:'Mexico', md:'Moldova', mc:'Monaco', mn:'Mongolia', me:'Montenegro', ma:'Morocco', mz:'Mozambique', mm:'Myanmar', na:'Namibia', np:'Nepal', nl:'Netherlands', nz:'New Zealand', ni:'Nicaragua', ne:'Niger', ng:'Nigeria', mk:'North Macedonia', no:'Norway', om:'Oman', pk:'Pakistan', ps:'Palestine', pa:'Panama', pg:'Papua New Guinea', py:'Paraguay', pe:'Peru', ph:'Philippines', pl:'Poland', pt:'Portugal', qa:'Qatar', ro:'Romania', ru:'Russia', rw:'Rwanda', kn:'Saint Kitts', lc:'Saint Lucia', ws:'Samoa', st:'Sao Tome', sa:'Saudi Arabia', sn:'Senegal', rs:'Serbia', sc:'Seychelles', sl:'Sierra Leone', sg:'Singapore', sk:'Slovakia', si:'Slovenia', sb:'Solomon Islands', so:'Somalia', za:'South Africa', kr:'South Korea', ss:'South Sudan', es:'Spain', lk:'Sri Lanka', sd:'Sudan', sr:'Suriname', se:'Sweden', ch:'Switzerland', sy:'Syria', tw:'Taiwan', tj:'Tajikistan', tz:'Tanzania', th:'Thailand', tg:'Togo', to:'Tonga', tt:'Trinidad', tn:'Tunisia', tr:'Turkey', tm:'Turkmenistan', ug:'Uganda', ua:'Ukraine', ae:'UAE', uk:'United Kingdom', gb:'United Kingdom', us:'United States', uy:'Uruguay', uz:'Uzbekistan', ve:'Venezuela', vn:'Vietnam', ye:'Yemen', zm:'Zambia', zw:'Zimbabwe' };
+const COUNTRY_BY_NAME = {};
+Object.values(COUNTRY_NAMES).forEach(n => { COUNTRY_BY_NAME[n.toUpperCase()] = n; });
+function titleCase(s) {
+  return s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+}
+function deriveCountry(tvgId, groupTitle, name) {
+  // 1. Country code inside tvg-id: "Name.cc@..." or a trailing "Name.cc"
+  const m = (tvgId || '').match(/\.([a-z]{2})(?:@|$)/i);
+  if (m) return COUNTRY_NAMES[m[1].toLowerCase()] || m[1].toUpperCase();
+  // 2. Group title that IS a country name (e.g. "BANGLADESH")
+  const gt = (groupTitle || '').trim();
+  if (COUNTRY_BY_NAME[gt.toUpperCase()]) return COUNTRY_BY_NAME[gt.toUpperCase()];
+  // 3. Bangla-language groups / names are Bangladeshi
+  if (/^bangla\b/i.test(gt) || /bangla|bangladesh/i.test(name)) return 'Bangladesh';
+  // 4. Small explicit list for well-known channels without a code
+  if (/^(ptv sports|geo (news|tv|entertainment)|ary (news|digital)|hum (tv|news))/i.test(name)) return 'Pakistan';
+  if (/^(dd (national|news|india|bharati)|zee (tv|cinema|news)|star plus|sony (tv|entertainment))/i.test(name)) return 'India';
+  return 'International';
+}
+function deriveCategory(groupTitle) {
+  const gt = (groupTitle || '').trim();
+  if (!gt) return 'General';
+  if (COUNTRY_BY_NAME[gt.toUpperCase()]) return 'General'; // country label, not a genre
+  if (/^bangla\s+/i.test(gt)) return titleCase(gt.replace(/^bangla\s+/i, ''));
+  const first = gt.split(';')[0].trim();
+  if (/^undefined$/i.test(first)) return 'General';
+  return titleCase(first);
+}
 function parseM3U(text) {
   const lines = text.split(/\r?\n/);
   const channels = [];
@@ -922,11 +973,12 @@ function parseM3U(text) {
       pending = {
         name: name || 'Unnamed Channel',
         logo: attrs['tvg-logo'] || '',
-        category: (attrs['group-title'] || 'General').trim() || 'General',
+        category: deriveCategory(attrs['group-title']),
+        country: deriveCountry(attrs['tvg-id'], attrs['group-title'], name || 'Unnamed Channel'),
         tvgId: attrs['tvg-id'] || '',
       };
     } else if (line.startsWith('#EXTGRP')) {
-      if (pending) pending.category = line.slice(8).trim() || pending.category;
+      if (pending) pending.category = deriveCategory(line.slice(8).trim()) || pending.category;
     } else if (!line.startsWith('#')) {
       if (!pending) pending = { name: 'Unnamed Channel', logo: '', category: 'General', tvgId: '' };
       pending.url = line;
@@ -968,6 +1020,7 @@ async function loadPlaylist(isRefresh = false) {
     // source's parser numbers from 0, so ids would otherwise collide.
     channels.forEach((ch, idx) => { ch.id = (ch.tvgId || ch.name) + '::' + idx; });
     state.allChannels = channels;
+    buildCountries();
     buildCategories();
     applyFilters();
     Store.set('lastPlaylist', channels.slice(0, 500)); // offline fallback cache (bounded)
@@ -978,6 +1031,7 @@ async function loadPlaylist(isRefresh = false) {
     const cached = Store.get('lastPlaylist', []);
     if (cached.length) {
       state.allChannels = cached;
+      buildCountries();
       buildCategories();
       applyFilters();
       toast('Using saved channel list (offline)', 'info');
@@ -989,21 +1043,65 @@ async function loadPlaylist(isRefresh = false) {
   }
 }
 
-/* ---------- 6. CATEGORIES ---------- */
-// Category cards are heavy (hundreds) and hidden until the Categories tab
-// opens, so they render lazily on first open instead of at every load.
-let catGridDirty = true;
+/* ---------- 6. COUNTRIES & CATEGORIES ---------- */
+// Countries first (Bangladesh, India, Pakistan pinned to the front), then
+// genres inside the selected country. Country cards are heavy (hundreds of
+// territories) and hidden until the Countries tab opens, so they render
+// lazily on first open instead of at every load.
+let countryGridDirty = true;
+const PINNED_COUNTRIES = ['Bangladesh', 'India', 'Pakistan'];
+function buildCountries() {
+  const set = new Map();
+  state.allChannels.forEach(ch => set.set(ch.country, (set.get(ch.country) || 0) + 1));
+  const rest = Array.from(set.entries())
+    .filter(([name]) => !PINNED_COUNTRIES.includes(name))
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+  const pinned = PINNED_COUNTRIES
+    .filter(n => set.has(n))
+    .map(n => ({ name: n, count: set.get(n) }));
+  state.countries = [...pinned, ...rest];
+  renderCountryChips();
+  countryGridDirty = true;
+  const el = document.getElementById('statCountries');
+  if (el) el.textContent = state.countries.length;
+}
+function renderCountryChips() {
+  const row = document.getElementById('countryRow');
+  if (!row) return;
+  const chips = [{ name: 'All', count: state.allChannels.length }, ...state.countries];
+  row.innerHTML = '';
+  chips.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-chip' + (state.activeCountry === c.name ? ' active' : '');
+    btn.textContent = (c.name === 'All' ? 'All Countries' : c.name) + ' (' + c.count + ')';
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', state.activeCountry === c.name ? 'true' : 'false');
+    btn.addEventListener('click', () => selectCountry(c.name));
+    row.appendChild(btn);
+  });
+}
+function selectCountry(name) {
+  state.activeCountry = name;
+  state.activeCategory = 'All';
+  buildCategories();
+  renderCountryChips();
+  applyFilters();
+  switchView('home');
+}
+function countryPool() {
+  return state.activeCountry === 'All' ? state.allChannels : state.allChannels.filter(c => c.country === state.activeCountry);
+}
 function buildCategories() {
   const set = new Map();
-  state.allChannels.forEach(ch => set.set(ch.category, (set.get(ch.category) || 0) + 1));
+  countryPool().forEach(ch => set.set(ch.category, (set.get(ch.category) || 0) + 1));
   state.categories = Array.from(set.entries()).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
   renderCategoryChips();
-  catGridDirty = true;
   document.getElementById('statCats').textContent = state.categories.length;
 }
 function renderCategoryChips() {
   const row = document.getElementById('catRow');
-  const chips = [{ name: 'All', count: state.allChannels.length }, ...state.categories];
+  const chips = [{ name: 'All', count: countryPool().length }, ...state.categories];
   row.innerHTML = '';
   chips.forEach(c => {
     const btn = document.createElement('button');
@@ -1020,20 +1118,15 @@ function renderCategoryChips() {
     row.appendChild(btn);
   });
 }
-function renderCategoryGrid() {
+function renderCountryGrid() {
   const grid = document.getElementById('catGrid');
   grid.innerHTML = '';
-  state.categories.forEach(c => {
+  state.countries.forEach(c => {
     const card = document.createElement('button');
     card.className = 'chan-card';
     card.style.aspectRatio = '1.4';
     card.innerHTML = `<div class="chan-logo-wrap" style="width:100%;height:44px;border-radius:10px"><span style="font-family:var(--font-display);font-size:20px;color:var(--gold)">${escapeHTML(c.name.slice(0,2).toUpperCase())}</span></div><div class="chan-name">${escapeHTML(c.name)}</div><div class="chan-cat">${c.count} channels</div>`;
-    card.addEventListener('click', () => {
-      state.activeCategory = c.name;
-      renderCategoryChips();
-      applyFilters();
-      switchView('home');
-    });
+    card.addEventListener('click', () => selectCountry(c.name));
     grid.appendChild(card);
   });
 }
@@ -1088,13 +1181,14 @@ document.getElementById('clearSearch').addEventListener('click', () => {
 /* ---------- 8. FILTER + GRID RENDERING (infinite scroll + skeleton) ---------- */
 function applyFilters() {
   let list = state.allChannels;
+  if (state.activeCountry !== 'All') list = list.filter(c => c.country === state.activeCountry);
   if (state.activeCategory !== 'All') list = list.filter(c => c.category === state.activeCategory);
   if (state.query) {
-    list = list.filter(c => c.name.toLowerCase().includes(state.query) || c.category.toLowerCase().includes(state.query));
+    list = list.filter(c => c.name.toLowerCase().includes(state.query) || c.category.toLowerCase().includes(state.query) || c.country.toLowerCase().includes(state.query));
   }
   state.filtered = list;
   state.renderedCount = 0;
-  document.getElementById('gridTitle').textContent = state.query ? `Results for "${searchInput.value}"` : state.activeCategory;
+  document.getElementById('gridTitle').textContent = state.query ? `Results for "${searchInput.value}"` : (state.activeCountry !== 'All' ? state.activeCountry + (state.activeCategory !== 'All' ? ' · ' + state.activeCategory : '') : state.activeCategory);
   document.getElementById('gridCount').textContent = list.length;
   document.getElementById('statChannels').textContent = state.allChannels.length;
   const grid = document.getElementById('grid');
@@ -1141,7 +1235,7 @@ function buildChannelCard(ch) {
   `;
   card.addEventListener('click', (e) => {
     if (e.target.closest('.fav-toggle')) { toggleFavorite(ch.id); e.stopPropagation(); return; }
-    playChannel(ch);
+    playChannel(ch, { sound: true });
   });
   return card;
 }
@@ -1216,7 +1310,7 @@ function renderContinueWatching() {
     `;
     card.addEventListener('click', () => {
       const full = state.allChannels.find(c => c.id === r.id) || r;
-      playChannel(full);
+      playChannel(full, { sound: true });
     });
     row.appendChild(card);
   });
@@ -1230,7 +1324,7 @@ function switchView(view) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'favorites') renderFavoritesView();
   if (view === 'settings') updateSettingsStats();
-  if (view === 'categories' && catGridDirty) { renderCategoryGrid(); catGridDirty = false; }
+  if (view === 'categories' && countryGridDirty) { renderCountryGrid(); countryGridDirty = false; }
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
@@ -1258,8 +1352,20 @@ const playerSkel = document.getElementById('playerSkel');
 const bufferSpinner = document.getElementById('bufferSpinner');
 const playerError = document.getElementById('playerError');
 
-function playChannel(ch) {
+// Play with sound when allowed; if sound autoplay is blocked (user
+// activation expired on a slow network), fall back to muted playback so
+// the channel still starts instead of stalling.
+function playVideo() {
+  const p = video.play();
+  if (p && p.catch) p.catch(() => {
+    if (!video.muted) { video.muted = true; video.play().catch(() => {}); }
+  });
+}
+function playChannel(ch, opts = {}) {
   if (!ch || !ch.url) return;
+  // User picked this channel (tap/click/key) — sound on immediately.
+  // Auto plays (startup/resume/retry) leave the mute state untouched.
+  if (opts.sound) video.muted = false;
   clearTimeout(state.retryTimer);
   state.retryCount = 0;
   state.currentChannel = ch;
@@ -1289,7 +1395,7 @@ function playChannel(ch) {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         showBuffering(false);
-        video.play().catch(() => {/* autoplay may require user gesture on some browsers */});
+        playVideo();
       });
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (!data.fatal) return;
@@ -1304,7 +1410,7 @@ function playChannel(ch) {
       });
     } else if (isNativeHls) {
       video.src = ch.url;
-      video.addEventListener('loadedmetadata', () => { showBuffering(false); video.play().catch(() => {}); }, { once: true });
+      video.addEventListener('loadedmetadata', () => { showBuffering(false); playVideo(); }, { once: true });
       video.addEventListener('error', () => scheduleRetry(ch), { once: true });
     } else {
       showError('Playback not supported', 'Your browser cannot play this stream format.');
@@ -1345,7 +1451,7 @@ function showError(title, msg) {
 }
 function hideError() { playerError.classList.remove('show'); }
 function showBuffering(on) { bufferSpinner.classList.toggle('show', on); }
-document.getElementById('retryBtn').addEventListener('click', () => { hideError(); if (state.currentChannel) { state.retryCount = 0; playChannel(state.currentChannel); } });
+document.getElementById('retryBtn').addEventListener('click', () => { hideError(); if (state.currentChannel) { state.retryCount = 0; playChannel(state.currentChannel, { sound: true }); } });
 
 function updateNowPlayingUI(ch) {
   document.getElementById('nowName').textContent = ch.name;
@@ -1383,7 +1489,7 @@ function stepChannel(dir) {
   let idx = state.currentIndex + dir;
   if (idx < 0) idx = list.length - 1;
   if (idx >= list.length) idx = 0;
-  playChannel(list[idx]);
+  playChannel(list[idx], { sound: true });
 }
 
 /* Fullscreen */
@@ -1569,7 +1675,26 @@ function wireSwitch(id, stateKey, onChange) {
 wireSwitch('swAutoLandscape', 'autoLandscape');
 wireSwitch('swAutoRetry', 'autoRetry');
 wireSwitch('swDataSaver', 'dataSaver', (on) => toast(on ? 'Data saver enabled' : 'Data saver disabled', 'info'));
-wireSwitch('swAutoTheme', 'autoTheme');
+wireSwitch('swAutoTheme', 'autoTheme', (on) => {
+  applyTheme();
+  toast(on ? 'Auto day / night theme on' : 'Dark theme locked', 'info');
+});
+
+// Auto day / night theme: light during the day (6am–6pm local time),
+// dark at night. Re-checked periodically so an open app flips on time.
+function applyTheme() {
+  const hour = new Date().getHours();
+  const light = state.autoTheme && hour >= 6 && hour < 18;
+  document.body.classList.toggle('light', light);
+  const sub = document.getElementById('themeSub');
+  if (sub) sub.textContent = light ? 'Light · Daytime' : (state.autoTheme ? 'Dark · Nighttime' : 'Premium dark');
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', light ? '#f4f1ea' : '#0a0a0f');
+  const cs = document.querySelector('meta[name="color-scheme"]');
+  if (cs) cs.setAttribute('content', light ? 'light' : 'dark');
+}
+setInterval(applyTheme, 10 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) applyTheme(); });
 wireSwitch('swTvMode', 'tvMode', (on) => {
   document.body.classList.toggle('tv-mode', on);
   toast(on ? 'TV mode on — arrows move, OK plays, Back goes home' : 'TV mode off', 'info');
@@ -1725,6 +1850,10 @@ async function init() {
   document.body.classList.toggle('tv-mode', state.tvMode);
   document.getElementById('swTvMode').classList.toggle('on', state.tvMode);
   document.getElementById('swTvMode').setAttribute('aria-checked', state.tvMode);
+  state.autoTheme = Store.get('autoTheme', true);
+  document.getElementById('swAutoTheme').classList.toggle('on', state.autoTheme);
+  document.getElementById('swAutoTheme').setAttribute('aria-checked', state.autoTheme);
+  applyTheme();
   document.getElementById('swAutoLandscape').classList.toggle('on', state.autoLandscape);
   document.getElementById('swAutoRetry').classList.toggle('on', state.autoRetry);
   document.getElementById('swDataSaver').classList.toggle('on', state.dataSaver);
