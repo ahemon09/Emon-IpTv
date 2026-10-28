@@ -83,7 +83,8 @@ body{
 img{max-width:100%;display:block}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visible{
-  outline:2px solid var(--gold);outline-offset:2px;border-radius:6px;
+  outline:3px solid var(--gold);outline-offset:2px;border-radius:10px;
+  box-shadow:0 0 0 5px rgba(212,175,55,.16),0 8px 24px rgba(0,0,0,.5);
 }
 input{font-family:inherit;color:inherit}
 ::-webkit-scrollbar{width:8px;height:8px}
@@ -181,7 +182,7 @@ input{font-family:inherit;color:inherit}
 /* ============================================================
    3. PLAYER
    ============================================================ */
-.player-shell{padding:12px 12px 0}
+.player-shell{padding:12px 12px 0;position:sticky;top:calc(59px + var(--safe-top));z-index:35;background:var(--bg-0)}
 #playerWrap{
   position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--radius-lg);
   overflow:hidden;background:#000;border:1px solid var(--border);box-shadow:var(--shadow-soft);
@@ -316,6 +317,16 @@ input{font-family:inherit;color:inherit}
 @media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr)}}
 @media(min-width:1100px){.grid{grid-template-columns:repeat(5,1fr)}}
 @media(min-width:1400px){.grid{grid-template-columns:repeat(6,1fr)}}
+
+/* ---------- TV / REMOTE MODE (10-foot UI) ---------- */
+/* Bigger cards, roomier grid and a bold focus halo so the focused item
+   is obvious from the couch. Only active when TV mode is on. */
+body.tv-mode .chan-card:focus-visible{transform:scale(1.05)}
+@media(min-width:1100px){
+  body.tv-mode .grid{grid-template-columns:repeat(4,1fr);gap:16px}
+  body.tv-mode .chan-logo-wrap{width:64px;height:64px}
+  body.tv-mode .chan-name{font-size:14px}
+}
 
 .chan-card{
   border-radius:var(--radius-md);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;
@@ -645,6 +656,10 @@ input{font-family:inherit;color:inherit}
         <div><div class="label">Theme</div><div class="sub" id="themeSub">Premium dark</div></div>
         <button class="switch on" id="swAutoTheme" role="switch" aria-checked="true"><i></i></button>
       </div>
+      <div class="setting-row">
+        <div><div class="label">TV / Remote mode</div><div class="sub">Arrow keys move focus · OK plays · Back goes home</div></div>
+        <button class="switch" id="swTvMode" role="switch" aria-checked="false"><i></i></button>
+      </div>
     </div>
     <div class="glass" style="margin:0 14px 16px;border-radius:16px;padding:14px">
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px"><span>Channels loaded</span><b id="statChannels" style="color:var(--text)">0</b></div>
@@ -764,6 +779,7 @@ const state = {
   autoLandscape: true,
   autoRetry: true,
   dataSaver: false,
+  tvMode: false,             // TV / remote mode: D-pad spatial navigation
   deferredInstallPrompt: null,
   view: 'home',
   favorites: [],
@@ -974,12 +990,15 @@ async function loadPlaylist(isRefresh = false) {
 }
 
 /* ---------- 6. CATEGORIES ---------- */
+// Category cards are heavy (hundreds) and hidden until the Categories tab
+// opens, so they render lazily on first open instead of at every load.
+let catGridDirty = true;
 function buildCategories() {
   const set = new Map();
   state.allChannels.forEach(ch => set.set(ch.category, (set.get(ch.category) || 0) + 1));
   state.categories = Array.from(set.entries()).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
   renderCategoryChips();
-  renderCategoryGrid();
+  catGridDirty = true;
   document.getElementById('statCats').textContent = state.categories.length;
 }
 function renderCategoryChips() {
@@ -1129,7 +1148,7 @@ function buildChannelCard(ch) {
 function logoImg(ch) {
   const fallback = iconDataURI(64);
   if (!ch.logo) return `<span style="font-family:var(--font-display);font-size:18px;color:var(--gold)">${escapeHTML(ch.name.slice(0,2).toUpperCase())}</span>`;
-  return `<img src="${escapeAttr(ch.logo)}" alt="" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeAttr(ch.name.slice(0,2).toUpperCase())}',style:'font-family:var(--font-display);font-size:18px;color:var(--gold)'}))">`;
+  return `<img src="${escapeAttr(ch.logo)}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeAttr(ch.name.slice(0,2).toUpperCase())}',style:'font-family:var(--font-display);font-size:18px;color:var(--gold)'}))">`;
 }
 function escapeHTML(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHTML(s).replace(/`/g, '&#96;'); }
@@ -1211,6 +1230,7 @@ function switchView(view) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'favorites') renderFavoritesView();
   if (view === 'settings') updateSettingsStats();
+  if (view === 'categories' && catGridDirty) { renderCategoryGrid(); catGridDirty = false; }
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
@@ -1419,6 +1439,7 @@ function showControls() {
 }
 function hideControls() { playerControls.classList.add('hidden-ui'); }
 playerWrap.addEventListener('mousemove', showControls);
+playerWrap.addEventListener('focusin', showControls); // TV remote: reveal controls when a control gains focus
 showControls();
 
 /* ---------- 15. GESTURES: swipe channel, volume, brightness, double tap fullscreen, lock ---------- */
@@ -1549,6 +1570,10 @@ wireSwitch('swAutoLandscape', 'autoLandscape');
 wireSwitch('swAutoRetry', 'autoRetry');
 wireSwitch('swDataSaver', 'dataSaver', (on) => toast(on ? 'Data saver enabled' : 'Data saver disabled', 'info'));
 wireSwitch('swAutoTheme', 'autoTheme');
+wireSwitch('swTvMode', 'tvMode', (on) => {
+  document.body.classList.toggle('tv-mode', on);
+  toast(on ? 'TV mode on — arrows move, OK plays, Back goes home' : 'TV mode off', 'info');
+});
 
 function updateSettingsStats() {
   document.getElementById('statChannels').textContent = state.allChannels.length;
@@ -1613,9 +1638,68 @@ document.getElementById('installDismissBtn').addEventListener('click', () => {
   Store.set('installDismissed', true);
 });
 
-/* ---------- 22. KEYBOARD ACCESSIBILITY ---------- */
+/* ---------- 22. KEYBOARD + TV REMOTE ---------- */
+// Spatial navigation for TV remotes: arrows move focus to the nearest
+// focusable element in that direction. Enter/OK clicks it natively.
+function spatialNav(dir) {
+  const scope = document.querySelector('.overlay.show') || document;
+  const cands = Array.from(scope.querySelectorAll('button, input, [tabindex], a[href]'))
+    .filter(el => !el.disabled && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+  if (!cands.length) return;
+  const cur = document.activeElement;
+  if (!cur || cur === document.body || !cands.includes(cur)) {
+    const sorted = cands.slice().sort((a, b) => {
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      return ra.top - rb.top || ra.left - rb.left;
+    });
+    (dir === 'up' || dir === 'left' ? sorted[sorted.length - 1] : sorted[0]).focus();
+    return;
+  }
+  const r = cur.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let best = null, bestScore = Infinity;
+  cands.forEach(el => {
+    if (el === cur) return;
+    const q = el.getBoundingClientRect();
+    const qx = q.left + q.width / 2, qy = q.top + q.height / 2;
+    const dx = qx - cx, dy = qy - cy;
+    let primary, secondary;
+    if (dir === 'left') { if (dx >= -8) return; primary = -dx; secondary = Math.abs(dy); }
+    else if (dir === 'right') { if (dx <= 8) return; primary = dx; secondary = Math.abs(dy); }
+    else if (dir === 'up') { if (dy >= -8) return; primary = -dy; secondary = Math.abs(dx); }
+    else { if (dy <= 8) return; primary = dy; secondary = Math.abs(dx); }
+    const score = primary + secondary * 3;
+    if (score < bestScore) { bestScore = score; best = el; }
+  });
+  if (best) { best.focus(); best.scrollIntoView({ block: 'nearest' }); }
+}
+
+function isTVDevice() {
+  return /(TV|SmartTV|Tizen|WebOS|Viera|HbbTV|NetCast)/i.test(navigator.userAgent);
+}
+
 document.addEventListener('keydown', (e) => {
   if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (state.tvMode) {
+    switch (e.key) {
+      case 'ArrowLeft': e.preventDefault(); spatialNav('left'); break;
+      case 'ArrowRight': e.preventDefault(); spatialNav('right'); break;
+      case 'ArrowUp': e.preventDefault(); spatialNav('up'); break;
+      case 'ArrowDown': e.preventDefault(); spatialNav('down'); break;
+      case 'Escape': case 'Backspace': {
+        e.preventDefault();
+        if (state.isLocked) { state.isLocked = false; lockOverlay.classList.remove('show'); break; }
+        const open = document.querySelector('.overlay.show');
+        if (open) open.classList.remove('show');
+        else if (state.view !== 'home') switchView('home');
+        break;
+      }
+      case ' ': e.preventDefault(); playBtn.click(); break;
+      case 'f': case 'F': toggleFullscreen(); break;
+      case 'm': case 'M': video.muted = !video.muted; break;
+    }
+    return;
+  }
   switch (e.key) {
     case ' ': e.preventDefault(); playBtn.click(); break;
     case 'ArrowRight': stepChannel(1); break;
@@ -1636,6 +1720,11 @@ async function init() {
   state.autoLandscape = Store.get('autoLandscape', true);
   state.autoRetry = Store.get('autoRetry', true);
   state.dataSaver = Store.get('dataSaver', false);
+  // TV mode: stored choice wins; on a real TV device it defaults to ON.
+  state.tvMode = Store.get('tvMode', isTVDevice());
+  document.body.classList.toggle('tv-mode', state.tvMode);
+  document.getElementById('swTvMode').classList.toggle('on', state.tvMode);
+  document.getElementById('swTvMode').setAttribute('aria-checked', state.tvMode);
   document.getElementById('swAutoLandscape').classList.toggle('on', state.autoLandscape);
   document.getElementById('swAutoRetry').classList.toggle('on', state.autoRetry);
   document.getElementById('swDataSaver').classList.toggle('on', state.dataSaver);
@@ -1650,6 +1739,12 @@ async function init() {
   const lastId = Store.get('lastChannelId', null);
   const resumeChannel = (lastId && state.allChannels.find(c => c.id === lastId)) || state.allChannels[0];
   if (resumeChannel) playChannel(resumeChannel);
+
+  // TV mode: land focus on the first channel card so the remote works immediately
+  if (state.tvMode) {
+    const firstCard = document.querySelector('#grid .chan-card');
+    if (firstCard) firstCard.focus({ preventScroll: true });
+  }
 
   if (!Store.get('disclaimerAgreed', false)) setTimeout(() => openSheet('disclaimerOverlay'), 900);
   setTimeout(() => { if (!Store.get('telegramShown', false)) { Store.set('telegramShown', true); } }, 2000);
